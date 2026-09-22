@@ -1,0 +1,46 @@
+name: Verify Assignment 1
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run training pipeline (main.py train)
+        run: uv run python main.py train
+
+      - name: Run Gradio app (main.py app)
+        run: |
+          uv run python main.py app &
+          APP_PID=$!
+
+          sleep 30
+
+          if ! kill -0 "$APP_PID" 2>/dev/null; then
+            echo "main.py app exited before we could check it — something is wrong."
+            wait "$APP_PID"
+            exit 1
+          fi
+
+          if ! curl -sf http://127.0.0.1:7860 > /dev/null; then
+            echo "App process is running but didn't respond on http://127.0.0.1:7860."
+            kill "$APP_PID" 2>/dev/null || true
+            exit 1
+          fi
+
+          echo "App started and responded successfully."
+          kill "$APP_PID" 2>/dev/null || true
