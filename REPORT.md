@@ -15,7 +15,7 @@ It links to my credit-risk idea, and it has real data problems
 
 ## Business / real-life framing
 
-The decision behin is that a bank decides whether to approve or reject each loan application
+The decision behind is that a bank decides whether to approve or reject each loan application
 I excluded "loan_grade" and "loan_int_rate", because the bank sets them after judging the risk, so using them would be leakage. Also AUC would jump from 0.830 to 0.892 if I used them.
 The split is random because there's no date column, so a time based split is impossible. I used a stratified 60/20/20 split.
 The threshold is set by money, not accuracy mainly because of 3 reasons:
